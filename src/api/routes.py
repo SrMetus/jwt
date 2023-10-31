@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 
+
 api = Blueprint('api', __name__)
 
 
@@ -21,10 +22,19 @@ def handle_hello():
 @api.route('/signup', methods=['POST'])
 def signup():
     if request.method == 'POST':
-        user = User()
-        if user is not None:
-            data = request.get_json()
-            user.email = data["email"]
+        data = request.get_json()
+        email = data["email"]
+
+        existing_user = User.query.filter_by(email=email).first()
+
+        if existing_user:
+            return jsonify({
+                "msg": "Usuario ya existe",
+                "estado": "No exitoso"
+            }), 409
+        else:
+            user = User()
+            user.email = email
             user.password = data["password"]
             user.is_active = True
 
@@ -35,15 +45,19 @@ def signup():
                 "msg": "Usuario creado",
                 "estado": "éxito"
             }), 200
-        else:
-            return jsonify({
-                "msg": "Usuario creado",
-                "estado": "éxito"
-            }), 404
 
+@api.route("/login", methods=["POST"])
+def login_user():
+    data = request.get_json()
+    user = User.query.filter_by(email=data["email"]).first()
 
-@api.route('/login', methods=['POST'])
-def login():
-    if user is not None:
-        data = request.get_json()
-        user = User.query.filter_by(email=data["rut"]).first()
+    if user:
+        return jsonify({
+            "msg": "Inicio de sesión exitoso",
+            "status": "success"
+        }), 200
+    else:
+        return jsonify({
+            "msg": "Usuario no encontrado",
+            "status": "unauthorized"
+        }), 401

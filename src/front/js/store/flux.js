@@ -1,6 +1,7 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	const url = "https://super-duper-fishstick-xvq7xwgrjxrh659j-3001.app.github.dev"
-	const urlSignup = "/signup"
+	const urlSignup = "/api/signup"
+	const urlLogin = "/api/login"
 	return {
 		store: {
 			users: [],
@@ -26,6 +27,26 @@ const getState = ({ getStore, getActions, setStore }) => {
 						console.log("Error", error)
 					});
 			},
+
+			login: async (info) => {
+				const request = {
+				  method: "POST",
+				  body: JSON.stringify(info),
+				  headers: {
+					"Content-Type": "application/json"
+				  }
+				}
+				try {
+				  const resp = await fetch(`${url}${urlLogin}`, request)
+				  const data = await resp.json()
+				  localStorage.setItem("dataUser", JSON.stringify(data))
+				  setStore({ dataUser: data });
+				  console.log(data)
+				  return data
+				} catch (error) {
+				  console.log(error)
+				}
+			  },
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
